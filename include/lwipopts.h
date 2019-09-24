@@ -511,7 +511,7 @@
  * If NAPT is used, ip_napt_init() has to be called explicitly once.
  */
 #ifndef IP_NAPT_DYNAMIC
-#define IP_NAPT_DYNAMIC                 0
+#define IP_NAPT_DYNAMIC                 1
 #endif
 
 /**
@@ -792,7 +792,7 @@
  * LWIP_IGMP==1: Turn on IGMP module.
  */
 #ifndef LWIP_IGMP
-#define LWIP_IGMP                       1
+#define LWIP_IGMP                       0
 #endif
 /*
    ----------------------------------
@@ -1137,7 +1137,7 @@
  * changes its up/down status (i.e., due to DHCP IP acquistion)
  */
 #ifndef LWIP_NETIF_STATUS_CALLBACK
-#define LWIP_NETIF_STATUS_CALLBACK      0
+#define LWIP_NETIF_STATUS_CALLBACK      1
 #endif
 
 /**
@@ -1830,7 +1830,6 @@
    ---------- Debugging options ----------
    ---------------------------------------
 */
-//#define LWIP_DEBUG			1
 /**
  * LWIP_DBG_MIN_LEVEL: After masking, the value of the debug is
  * compared against this value. If it is smaller, then debugging
@@ -1859,7 +1858,12 @@
  * NETIF_DEBUG: Enable debugging in netif.c.
  */
 #ifndef NETIF_DEBUG
-#define NETIF_DEBUG                     LWIP_DBG_OFF
+#define NETIF_DEBUG                     LWIP_DBG_ON
+#endif
+
+
+#ifndef ESPCONN_UDP_DEBUG
+#define ESPCONN_UDP_DEBUG               LWIP_DBG_OFF
 #endif
 
 /**
@@ -1894,7 +1898,7 @@
  * ICMP_DEBUG: Enable debugging in icmp.c.
  */
 #ifndef ICMP_DEBUG
-#define ICMP_DEBUG                      LWIP_DBG_OFF
+#define ICMP_DEBUG                      LWIP_DBG_ON
 #endif
 
 /**

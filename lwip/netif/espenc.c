@@ -346,7 +346,7 @@ err_t ICACHE_FLASH_ATTR enc28j60_init(struct netif *netif) {
         netif->hwaddr_len = 6;
 
         netif->output = etharp_output;
-        netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
+        netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET | NETIF_FLAG_LINK_UP;
 
         log("initializing hardware");
         spi_init(HSPI);
@@ -426,7 +426,7 @@ err_t ICACHE_FLASH_ATTR enc28j60_init(struct netif *netif) {
         return ERR_OK;
 }
 
-struct netif* espenc_init(uint8_t *mac_addr, ip_addr_t *ip, ip_addr_t *mask, ip_addr_t *gw, bool dhcp) {
+struct netif* espenc_init(uint8_t *mac_addr, ip_addr_t *ip, ip_addr_t *mask, ip_addr_t *gw, bool dhcp, bool default_int) {
         ip_addr_t nulladdr;
         struct netif* new_netif;
 
@@ -448,6 +448,10 @@ struct netif* espenc_init(uint8_t *mac_addr, ip_addr_t *ip, ip_addr_t *mask, ip_
                 }
         }
 
+        if(default_int) {
+                netif_set_default_interface(new_netif);
+        }
+        
         return new_netif;
 }
 

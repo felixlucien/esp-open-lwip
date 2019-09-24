@@ -296,7 +296,8 @@ netif_remove(struct netif *netif)
   /* this netif is default? */
   if (netif_default == netif) {
     /* reset default netif */
-    netif_set_default(NULL);
+    LWIP_DEBUGF( NETIF_DEBUG, ("netif_remove: setting netif to NULL\n") );
+    netif_set_default_interface(NULL);
   }
   LWIP_DEBUGF( NETIF_DEBUG, ("netif_remove: removed netif\n") );
 }
@@ -450,16 +451,24 @@ netif_set_netmask(struct netif *netif, ip_addr_t *netmask)
 void
 netif_set_default(struct netif *netif)
 {
+  LWIP_DEBUGF(NETIF_DEBUG, ("netif: set default called externally\n"));
+}
+
+void
+netif_set_default_interface(struct netif *netif) 
+{
   if (netif == NULL) {
-    /* remove default route */
-    snmp_delete_iprteidx_tree(1, netif);
-  } else {
-    /* install default route */
-    snmp_insert_iprteidx_tree(1, netif);
-  }
-  netif_default = netif;
-  LWIP_DEBUGF(NETIF_DEBUG, ("netif: setting default interface %c%c\n",
-           netif ? netif->name[0] : '\'', netif ? netif->name[1] : '\''));
+      LWIP_DEBUGF(NETIF_DEBUG, ("netif: removing default route\n"));
+      /* remove default route */
+      snmp_delete_iprteidx_tree(1, netif);
+    } else {
+      LWIP_DEBUGF(NETIF_DEBUG, ("netif: setting default route\n"));
+      /* install default route */
+      snmp_insert_iprteidx_tree(1, netif);
+    }
+    netif_default = netif;
+    LWIP_DEBUGF(NETIF_DEBUG, ("netif: setting default interface %c%c\n",
+            netif ? netif->name[0] : '\'', netif ? netif->name[1] : '\''));
 }
 
 /**
@@ -475,13 +484,10 @@ void netif_set_up(struct netif *netif)
 {
   if (!(netif->flags & NETIF_FLAG_UP)) {
     netif->flags |= NETIF_FLAG_UP;
-    
 #if LWIP_SNMP
     snmp_get_sysuptime(&netif->ts);
 #endif /* LWIP_SNMP */
-
     NETIF_STATUS_CALLBACK(netif);
-
     if (netif->flags & NETIF_FLAG_LINK_UP) {
 #if LWIP_ARP
       /* For Ethernet network interfaces, we would like to send a "gratuitous ARP" */ 

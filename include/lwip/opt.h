@@ -1816,11 +1816,15 @@
 #define ETHARP_DEBUG                    LWIP_DBG_OFF
 #endif
 
+#ifndef ESPCONN_UDP_DEBUG
+#define ESPCONN_UDP_DEBUG               LWIP_DBG_OFF
+#endif
+
 /**
  * NETIF_DEBUG: Enable debugging in netif.c.
  */
 #ifndef NETIF_DEBUG
-#define NETIF_DEBUG                     LWIP_DBG_OFF
+#define NETIF_DEBUG                     LWIP_DBG_ON
 #endif
 
 /**
@@ -1855,7 +1859,7 @@
  * ICMP_DEBUG: Enable debugging in icmp.c.
  */
 #ifndef ICMP_DEBUG
-#define ICMP_DEBUG                      LWIP_DBG_OFF
+#define ICMP_DEBUG                      LWIP_DBG_ON
 #endif
 
 /**

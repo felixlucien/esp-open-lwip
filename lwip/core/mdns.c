@@ -522,9 +522,11 @@ mdns_answer(u16_t type, const char* name, u8_t id) {
 				  os_printf("mdns_answer copying to new pbuf failed\n");
 				  return -1;
 			  }
+			  LWIP_DEBUGF(NETIF_DEBUG, ("netif: netif_set_default about to be called mdns\n"));
 			  netif_set_default(sta_netif);
 			  err = udp_sendto(mdns_pcb, p_sta, &multicast_addr, DNS_MDNS_PORT);
 			  pbuf_free(p_sta);
+			  LWIP_DEBUGF(NETIF_DEBUG, ("netif: netif_set_default about to be called mdns\n"));
 			  netif_set_default(ap_netif);
 			}
 		}
@@ -811,9 +813,11 @@ mdns_send_service(struct mdns_info *info, u8_t id) {
 				  os_printf("mdns_send_service copying to new pbuf failed\n");
 				  return -1;
 			  }
+			  LWIP_DEBUGF(NETIF_DEBUG, ("netif: netif_set_default about to be called mdns\n"));
 			  netif_set_default(sta_netif);
 			  err = udp_sendto(mdns_pcb, p_sta, &multicast_addr, DNS_MDNS_PORT);
 			  pbuf_free(p_sta);
+			  LWIP_DEBUGF(NETIF_DEBUG, ("netif: netif_set_default about to be called mdns\n"));
 			  netif_set_default(ap_netif);
 			}
 		}

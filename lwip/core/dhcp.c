@@ -1056,7 +1056,7 @@ dhcp_bind(struct netif *netif)
   netif_set_up(netif);
 
   // wjg: use old ip/mask/gw to check whether ip/mask/gw changed
-  system_station_got_ip_set(&ip, &mask, &gw);
+  //system_station_got_ip_set(&ip, &mask, &gw); //we are using eth along with wifi
 
   /* netif is now bound to DHCP leased address */
   dhcp_set_state(dhcp, DHCP_BOUND);

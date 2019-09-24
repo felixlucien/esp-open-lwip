@@ -73,7 +73,7 @@ typedef unsigned long   mem_ptr_t;
 #define PACK_STRUCT_BEGIN
 #define PACK_STRUCT_END
 
-//#define LWIP_DEBUG
+#define LWIP_DEBUG 1
 
 #ifdef LWIP_DEBUG
 #define LWIP_PLATFORM_DIAG(x) os_printf x

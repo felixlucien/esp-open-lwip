@@ -113,6 +113,7 @@ tunif_add(struct event_base *base, int fd, int header)
 //	data->ev = event_new(base, fd, EV_READ | EV_PERSIST, tunif_ready, data);
 	event_add(data->ev, NULL);
 	netif_add(&data->netif, NULL, NULL, NULL, data, tunif_init, ip_input);
+	LWIP_DEBUGF(NETIF_DEBUG, ("netif: netif_set_default about to be called tunif\n"));
 	netif_set_default(&data->netif);
 	return data;
 }
