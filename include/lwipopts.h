@@ -792,7 +792,7 @@
  * LWIP_IGMP==1: Turn on IGMP module.
  */
 #ifndef LWIP_IGMP
-#define LWIP_IGMP                       0
+#define LWIP_IGMP                       1
 #endif
 /*
    ----------------------------------

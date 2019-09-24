@@ -19,7 +19,6 @@
 #include "lwip/mem.h"
 #include "lwip/tcp_impl.h"
 #include "lwip/udp.h"
-#include "lwip/opt.h"
 
 #include "lwip/app/espconn_udp.h"
 
@@ -246,11 +245,9 @@ espconn_udp_sendto(void *arg, uint8 *psent, uint16 length)
 			  LWIP_DEBUGF(ESPCONN_UDP_DEBUG, ("espconn_udp_sendto: copying to new pbuf failed\n"));
 			  return ESPCONN_ARG;
 		  }
-          LWIP_DEBUGF(NETIF_DEBUG, ("netif: netif_set_default about to be called espconn\n"));
 		  netif_set_default(sta_netif);
 		  err = udp_sendto(upcb, p_temp, &dst_ip, dst_port);
 		  pbuf_free(p_temp);
-          LWIP_DEBUGF(NETIF_DEBUG, ("netif: netif_set_default about to be called espconn\n"));
 		  netif_set_default(ap_netif);
 		}
 	}
@@ -395,9 +392,6 @@ espconn_udp_server(struct espconn *pespconn)
  * 				  multicast_ip -- multicast ip given by user
  * Returns      : none
 *******************************************************************************/
-
-#if LWIP_IGMP
-
 sint8 ICACHE_FLASH_ATTR
 espconn_igmp_leave(ip_addr_t *host_ip, ip_addr_t *multicast_ip)
 {
@@ -427,5 +421,3 @@ espconn_igmp_join(ip_addr_t *host_ip, ip_addr_t *multicast_ip)
     /* join to any IP address at the port  */
     return ESPCONN_OK;
 }
-
-#endif
