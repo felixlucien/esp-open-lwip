@@ -503,7 +503,7 @@
  * on forwarded packets. This only makes sense with IP_FORWARD==1.
  */
 #ifndef IP_NAPT
-#define IP_NAPT                         1
+#define IP_NAPT                         0
 #endif
 
 /**
@@ -511,7 +511,7 @@
  * If NAPT is used, ip_napt_init() has to be called explicitly once.
  */
 #ifndef IP_NAPT_DYNAMIC
-#define IP_NAPT_DYNAMIC                 1
+#define IP_NAPT_DYNAMIC                 0
 #endif
 
 /**
@@ -1137,7 +1137,7 @@
  * changes its up/down status (i.e., due to DHCP IP acquistion)
  */
 #ifndef LWIP_NETIF_STATUS_CALLBACK
-#define LWIP_NETIF_STATUS_CALLBACK      1
+#define LWIP_NETIF_STATUS_CALLBACK      0
 #endif
 
 /**
@@ -1858,7 +1858,7 @@
  * NETIF_DEBUG: Enable debugging in netif.c.
  */
 #ifndef NETIF_DEBUG
-#define NETIF_DEBUG                     LWIP_DBG_ON
+#define NETIF_DEBUG                     LWIP_DBG_OFF
 #endif
 
 
@@ -1898,7 +1898,7 @@
  * ICMP_DEBUG: Enable debugging in icmp.c.
  */
 #ifndef ICMP_DEBUG
-#define ICMP_DEBUG                      LWIP_DBG_ON
+#define ICMP_DEBUG                      LWIP_DBG_OFF
 #endif
 
 /**
@@ -1920,6 +1920,20 @@
  */
 #ifndef IP_DEBUG
 #define IP_DEBUG                        LWIP_DBG_OFF
+#endif
+
+/**
+ * IP_DEBUG_ROUTE: Enable debugging for IP routing.
+ */
+#ifndef IP_DEBUG_ROUTE
+#define IP_DEBUG_ROUTE                        LWIP_DBG_OFF
+#endif
+
+/**
+ * ENC_DEBUG: Enable debugging for ENC28J60.
+ */
+#ifndef ENC_DEBUG
+#define ENC_DEBUG                        LWIP_DBG_ON
 #endif
 
 /**

@@ -120,50 +120,6 @@ static u16_t ip_id;
 ip_addr_t current_ip_new_dest;
 #endif /* IP_ROUTING_TAB */
 
-/*
-void
-ip_print(struct pbuf *p)
-{
-  struct ip_hdr *iphdr = (struct ip_hdr *)p->payload;
-  u8_t *payload;
-
-  payload = (u8_t *)iphdr + IP_HLEN;
-
-  os_printf("IP header:\n");
-  os_printf("+-------------------------------+\n");
-  os_printf("|%2"S16_F" |%2"S16_F" |  0x%02"X16_F" |     %5"U16_F"     | (v, hl, tos, len)\n",
-                    IPH_V(iphdr),
-                    IPH_HL(iphdr),
-                    IPH_TOS(iphdr),
-                    ntohs(IPH_LEN(iphdr)));
-  os_printf("+-------------------------------+\n");
-  os_printf("|    %5"U16_F"      |%"U16_F"%"U16_F"%"U16_F"|    %4"U16_F"   | (id, flags, offset)\n",
-                    ntohs(IPH_ID(iphdr)),
-                    ntohs(IPH_OFFSET(iphdr)) >> 15 & 1,
-                    ntohs(IPH_OFFSET(iphdr)) >> 14 & 1,
-                    ntohs(IPH_OFFSET(iphdr)) >> 13 & 1,
-                    ntohs(IPH_OFFSET(iphdr)) & IP_OFFMASK);
-  os_printf("+-------------------------------+\n");
-  os_printf("|  %3"U16_F"  |  %3"U16_F"  |    0x%04"X16_F"     | (ttl, proto, chksum)\n",
-                    IPH_TTL(iphdr),
-                    IPH_PROTO(iphdr),
-                    ntohs(IPH_CHKSUM(iphdr)));
-  os_printf("+-------------------------------+\n");
-  os_printf("|  %3"U16_F"  |  %3"U16_F"  |  %3"U16_F"  |  %3"U16_F"  | (src)\n",
-                    ip4_addr1_16(&iphdr->src),
-                    ip4_addr2_16(&iphdr->src),
-                    ip4_addr3_16(&iphdr->src),
-                    ip4_addr4_16(&iphdr->src));
-  os_printf("+-------------------------------+\n");
-  os_printf("|  %3"U16_F"  |  %3"U16_F"  |  %3"U16_F"  |  %3"U16_F"  | (dest)\n",
-                    ip4_addr1_16(&iphdr->dest),
-                    ip4_addr2_16(&iphdr->dest),
-                    ip4_addr3_16(&iphdr->dest),
-                    ip4_addr4_16(&iphdr->dest));
-  os_printf("+-------------------------------+\n");
-}
-*/
-
 /**
  * Finds the appropriate network interface for a given IP address. It
  * searches the list of network interfaces linearly. A match is found
@@ -176,6 +132,13 @@ ip_print(struct pbuf *p)
 struct netif *ICACHE_FLASH_ATTR
 ip_route(ip_addr_t *dest)
 {
+  if(netif_default) {
+    LWIP_DEBUGF(IP_DEBUG_ROUTE, ("ip_route: Trying to route packet to %d.%d.%d.%d. The default netif is %c%c\n", 
+    ip4_addr1_16(dest), ip4_addr2_16(dest), ip4_addr3_16(dest), ip4_addr4_16(dest), netif_default->name[0], netif_default->name[1]));
+  } else {
+    LWIP_DEBUGF(IP_DEBUG_ROUTE, ("ip_route: Trying to route packet to %d.%d.%d.%d. There is no default netif\n", 
+    ip4_addr1_16(dest), ip4_addr2_16(dest), ip4_addr3_16(dest), ip4_addr4_16(dest)));
+  }
   struct netif *netif;
 
 #ifdef IP_ROUTING_TAB
@@ -184,17 +147,12 @@ ip_route(ip_addr_t *dest)
 
 #ifdef IP_ROUTING_TAB
   int i;
-//os_printf_plus("ip_route route to %d.%d.%d.%d\r\n",
-//          ip4_addr1_16(dest), ip4_addr2_16(dest), ip4_addr3_16(dest), ip4_addr4_16(dest));
   /* search route */
   struct route_entry *found_route = ip_find_route(*dest);
   if (found_route) {
     ip_addr_copy(current_ip_new_dest, found_route->gw);
-
     /* now go on and find the netif on which to forward the packet */
     dest = &current_ip_new_dest;
-//os_printf_plus("redirected to %d.%d.%d.%d\r\n",
-//          ip4_addr1_16(dest), ip4_addr2_16(dest), ip4_addr3_16(dest), ip4_addr4_16(dest));
   }
 #endif /* IP_ROUTING_TAB */
 
@@ -204,33 +162,27 @@ ip_route(ip_addr_t *dest)
     if (netif_is_up(netif)) {
       if (ip_addr_netcmp(dest, &(netif->ip_addr), &(netif->netmask))) {
         /* return netif on which to forward IP packet */
-//os_printf_plus("send through netif %c%c%d\r\n", netif->name[0], netif->name[1], netif->num);
-        return netif;
-      }
-    }
-  }
-
-  /* iterate through netifs */
-  for(netif = netif_list; netif != NULL; netif = netif->next) {
-    /* This is a hack! Always sends is through the STA interface as default */
-    if (netif_is_up(netif)) {
-      if (!ip_addr_isbroadcast(dest, netif) && netif == (struct netif *)eagle_lwip_getif(0)) {
-//os_printf_plus("HACK send through netif %c%c%d\r\n", netif->name[0], netif->name[1], netif->num);
+        LWIP_DEBUGF(IP_DEBUG_ROUTE, ("ip_route: packet will be routed through netif %c%c with address %d.%d.%d.%d\n", 
+        netif->name[0], netif->name[1], ip4_addr1_16(&(netif->ip_addr)), ip4_addr2_16(&(netif->ip_addr)), ip4_addr3_16(&(netif->ip_addr)), ip4_addr4_16(&(netif->ip_addr))));
         return netif;
       }
     }
   }
 
   if ((netif_default == NULL) || (!netif_is_up(netif_default))) {
-    LWIP_DEBUGF(IP_DEBUG | LWIP_DBG_LEVEL_SERIOUS, ("ip_route: No route to %"U16_F".%"U16_F".%"U16_F".%"U16_F"\n",
+    LWIP_DEBUGF(IP_DEBUG_ROUTE, ("ip_route: No route to %"U16_F".%"U16_F".%"U16_F".%"U16_F"\n",
       ip4_addr1_16(dest), ip4_addr2_16(dest), ip4_addr3_16(dest), ip4_addr4_16(dest)));
     IP_STATS_INC(ip.rterr);
     snmp_inc_ipoutnoroutes();
-//os_printf_plus("no netif found\r\n");
     return NULL;
   }
   /* no matching netif found, use default netif */
-//os_printf_plus("send through netif %c%c%d\r\n", netif_default->name[0], netif_default->name[1], netif_default->num);
+  LWIP_DEBUGF(IP_DEBUG_ROUTE, ("ip_route: packet will be routed through default netif %c%c with address %d.%d.%d.%d\n", 
+        netif_default->name[0], netif_default->name[1], 
+        ip4_addr1_16(&(netif_default->ip_addr)), 
+        ip4_addr2_16(&(netif_default->ip_addr)), 
+        ip4_addr3_16(&(netif_default->ip_addr)), 
+        ip4_addr4_16(&(netif_default->ip_addr))));
   return netif_default;
 }
 
@@ -246,6 +198,7 @@ ip_route(ip_addr_t *dest)
 
 struct netif *ICACHE_FLASH_ATTR
 ip_router(ip_addr_t *dest, ip_addr_t *source){
+  LWIP_DEBUGF(IP_DEBUG_ROUTE, ("ip_route: Trying to route packet from %d, to %d. The default netif is %c%c\n", source->addr, dest->addr, netif_default->name[0], netif_default->name[1]));
 	struct netif *netif;
 	/* iterate through netifs */
   	for(netif = netif_list; netif != NULL; netif = netif->next) {
@@ -267,13 +220,14 @@ ip_router(ip_addr_t *dest, ip_addr_t *source){
   	}
 
 	if ((netif_default == NULL) || (!netif_is_up(netif_default))) {
-	    LWIP_DEBUGF(IP_DEBUG | LWIP_DBG_LEVEL_SERIOUS, ("ip_route: No route to %"U16_F".%"U16_F".%"U16_F".%"U16_F"\n",
+	    LWIP_DEBUGF(IP_DEBUG_ROUTE, ("ip_route: No route to %"U16_F".%"U16_F".%"U16_F".%"U16_F"\n",
 	      ip4_addr1_16(dest), ip4_addr2_16(dest), ip4_addr3_16(dest), ip4_addr4_16(dest)));
 	    IP_STATS_INC(ip.rterr);
 	    snmp_inc_ipoutnoroutes();
 	    return NULL;
   	}
   	/* no matching netif found, use default netif */
+    LWIP_DEBUGF(IP_DEBUG_ROUTE, ("ip_route: Using default netif to forward: %c%c\n", netif_default->name[0], netif_default->name[1]));
   	os_printf("ip_router %d %p\n", __LINE__, netif_default);
   	return netif_default;
 }
@@ -315,6 +269,7 @@ ip_napt_init(uint16_t max_nat, uint8_t max_portmap)
 void ICACHE_FLASH_ATTR
 ip_napt_enable(u32_t addr, int enable)
 {
+
   struct netif *netif;
   for (netif = netif_list; netif; netif = netif->next) {
     if (netif_is_up(netif) && !ip_addr_isany(&netif->ip_addr) && netif->ip_addr.addr == addr) {
@@ -965,7 +920,7 @@ ip_forward(struct pbuf *p, struct ip_hdr *iphdr, struct netif *inp)
 
   /* RFC3927 2.7: do not forward link-local addresses */
   if (ip_addr_islinklocal(&current_iphdr_dest)) {
-    LWIP_DEBUGF(IP_DEBUG, ("ip_forward: not forwarding LLA %"U16_F".%"U16_F".%"U16_F".%"U16_F"\n",
+    LWIP_DEBUGF(IP_DEBUG_ROUTE, ("ip_forward: not forwarding LLA %"U16_F".%"U16_F".%"U16_F".%"U16_F"\n",
       ip4_addr1_16(&current_iphdr_dest), ip4_addr2_16(&current_iphdr_dest),
       ip4_addr3_16(&current_iphdr_dest), ip4_addr4_16(&current_iphdr_dest)));
     goto return_noroute;
@@ -974,7 +929,7 @@ ip_forward(struct pbuf *p, struct ip_hdr *iphdr, struct netif *inp)
   /* Find network interface where to forward this IP packet to. */
   netif = ip_route(&current_iphdr_dest);
   if (netif == NULL) {
-    LWIP_DEBUGF(IP_DEBUG, ("ip_forward: no forwarding route for %"U16_F".%"U16_F".%"U16_F".%"U16_F" found\n",
+    LWIP_DEBUGF(IP_DEBUG_ROUTE, ("ip_forward: no forwarding route for %"U16_F".%"U16_F".%"U16_F".%"U16_F" found\n",
       ip4_addr1_16(&current_iphdr_dest), ip4_addr2_16(&current_iphdr_dest),
       ip4_addr3_16(&current_iphdr_dest), ip4_addr4_16(&current_iphdr_dest)));
     goto return_noroute;
@@ -987,7 +942,7 @@ ip_forward(struct pbuf *p, struct ip_hdr *iphdr, struct netif *inp)
       && ip_addr_cmp(&current_ip_new_dest, &current_iphdr_dest)
 #endif
       ) {
-    LWIP_DEBUGF(IP_DEBUG, ("ip_forward: not bouncing packets back on incoming interface.\n"));
+    LWIP_DEBUGF(IP_DEBUG_ROUTE, ("ip_forward: not bouncing packets back on incoming interface.\n"));
     goto return_noroute;
   }
 

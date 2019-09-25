@@ -509,7 +509,7 @@
 #endif
 
 #ifndef IP_NAPT
-#define IP_NAPT                         1
+#define IP_NAPT                         0
 #endif
 
 /**
@@ -1824,7 +1824,7 @@
  * NETIF_DEBUG: Enable debugging in netif.c.
  */
 #ifndef NETIF_DEBUG
-#define NETIF_DEBUG                     LWIP_DBG_ON
+#define NETIF_DEBUG                     LWIP_DBG_OFF
 #endif
 
 /**
@@ -1859,7 +1859,7 @@
  * ICMP_DEBUG: Enable debugging in icmp.c.
  */
 #ifndef ICMP_DEBUG
-#define ICMP_DEBUG                      LWIP_DBG_ON
+#define ICMP_DEBUG                      LWIP_DBG_OFF
 #endif
 
 /**
@@ -1880,7 +1880,7 @@
  * IP_DEBUG: Enable debugging for IP.
  */
 #ifndef IP_DEBUG
-#define IP_DEBUG                        LWIP_DBG_OFF
+#define IP_DEBUG                        LWIP_DBG_ON
 #endif
 
 /**

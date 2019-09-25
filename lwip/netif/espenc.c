@@ -426,15 +426,20 @@ err_t ICACHE_FLASH_ATTR enc28j60_init(struct netif *netif) {
         return ERR_OK;
 }
 
-struct netif* espenc_init(uint8_t *mac_addr, ip_addr_t *ip, ip_addr_t *mask, ip_addr_t *gw, bool dhcp, bool default_int) {
+struct netif* espenc_init(uint8_t *mac_addr, ip_addr_t *ip, ip_addr_t *mask, ip_addr_t *gw, bool dhcp, bool default_int, bool napt) {
         ip_addr_t nulladdr;
         struct netif* new_netif;
+
+        
 
         system_os_task(swint_Task, swint_TaskPrio, swint_TaskQueue, swint_TaskQueueLen);
 
         IP4_ADDR(&nulladdr, 0, 0, 0, 0);
 
         os_memcpy(enc_netif.hwaddr, mac_addr, 6);
+        enc_netif.num = 1;
+
+        LWIP_DEBUGF(ENC_DEBUG, ("enc_debug: ENC has if num %d\n", enc_netif.num));
 
         if(dhcp) {
                 new_netif = netif_add(&enc_netif, &nulladdr, &nulladdr, &nulladdr, NULL, enc28j60_init, ethernet_input);
@@ -448,10 +453,12 @@ struct netif* espenc_init(uint8_t *mac_addr, ip_addr_t *ip, ip_addr_t *mask, ip_
                 }
         }
 
-        if(default_int) {
+        if(new_netif) {
                 netif_set_default_interface(new_netif);
         }
-        
+
+        LWIP_DEBUGF(ENC_DEBUG, ("enc_debug: ENC has if num %d\n", new_netif->num));
+
         return new_netif;
 }
 

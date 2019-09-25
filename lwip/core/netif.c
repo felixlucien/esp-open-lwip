@@ -202,14 +202,27 @@ netif_add(struct netif *netif, ip_addr_t *ipaddr, ip_addr_t *netmask,
     return NULL;
   }
 
-  netifnum = 0;
-  struct netif *nif;
-  for (nif = netif_list; nif != NULL; nif = nif->next) {
-    if (nif->name[0] == netif->name[0] && nif->name[1] == netif->name[1]) {
-      netifnum++;
+  int netif_num = 0;
+  struct netif *netif2;
+  int num_netifs;
+  do {
+    if (netif->num == 255) {
+      netif->num = 0;
     }
+    num_netifs = 0;
+    for (netif2 = netif_list; netif2 != NULL; netif2 = netif2->next) {
+      num_netifs++;
+      if (netif2->num == netif->num) {
+        netif->num++;
+        break;
+      }
+    }
+  } while (netif2 != NULL);
+  if (netif->num == 254) {
+    netif_num = 0;
+  } else {
+    netif_num = (u8_t)(netif->num + 1);
   }
-  netif->num = netifnum;
 
   /* add this netif to the list */
   netif->next = netif_list;
